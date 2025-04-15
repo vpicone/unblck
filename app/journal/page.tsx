@@ -1,6 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface JournalEntry {
   id: number;
@@ -9,41 +10,58 @@ interface JournalEntry {
   updated_at: string;
 }
 
-export default function JournalPage() {
-  const { isSignedIn } = useUser();
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [content, setContent] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+export function useJournalEntries(enabled: boolean) {
+  return useQuery<JournalEntry[]>({
+    queryKey: ["journalEntries"],
+    queryFn: async () => {
+      const res = await fetch("/api/journal");
+      if (!res.ok) throw new Error("Failed to fetch journal entries");
+      return res.json();
+    },
+    enabled,
+  });
+}
 
-  // Fetch journal entries
-  useEffect(() => {
-    if (!isSignedIn) return;
-    fetch("/api/journal")
-      .then((res) => res.json())
-      .then((data) => setEntries(data))
-      .catch(() => setError("Failed to load entries"));
-  }, [isSignedIn]);
+export function useAddJournalEntry() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (content: string) => {
+      const res = await fetch("/api/journal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      });
+      if (!res.ok) throw new Error("Failed to create entry");
+      return res.json();
+    },
+    onSuccess: (newEntry) => {
+      queryClient.setQueryData<JournalEntry[]>(["journalEntries"], (old) =>
+        old ? [newEntry, ...old] : [newEntry]
+      );
+    },
+  });
+}
+
+export default function JournalPage() {
+  const { isSignedIn, isLoaded } = useUser();
+  const {
+    data: entries = [],
+    isLoading,
+    error,
+  } = useJournalEntries(!!isSignedIn);
+  const addJournalEntry = useAddJournalEntry();
+  const [content, setContent] = useState("");
 
   // Handle new entry submission
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-    const res = await fetch("/api/journal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
+    addJournalEntry.mutate(content, {
+      onSuccess: () => setContent(""),
     });
-    if (!res.ok) {
-      setError("Failed to create entry");
-      setLoading(false);
-      return;
-    }
-    const newEntry = await res.json();
-    setEntries([newEntry, ...entries]);
-    setContent("");
-    setLoading(false);
+  }
+
+  if (!isLoaded) {
+    return;
   }
 
   if (!isSignedIn) {
@@ -53,6 +71,8 @@ export default function JournalPage() {
       </div>
     );
   }
+
+  console.log(addJournalEntry);
 
   return (
     <div className="max-w-xl mx-auto p-6">
@@ -68,22 +88,22 @@ export default function JournalPage() {
         <button
           type="submit"
           className="bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50"
-          disabled={loading || !content.trim()}
+          disabled={addJournalEntry.isPending || !content.trim()}
         >
-          {loading ? "Saving..." : "Add Entry"}
+          Add Entry
         </button>
       </form>
-      {error && <div className="text-red-600 mb-4">{error}</div>}
+      {error && <div className="text-red-600 mb-4">{error.message}</div>}
       <div className="space-y-4">
-        {entries.length === 0 ? (
+        {isLoading ? null : entries.length === 0 ? (
           <div className="text-gray-500">No entries yet.</div>
         ) : (
           entries.map((entry) => (
-            <div key={entry.id} className="border rounded p-3 bg-white/80">
-              <div className="text-sm text-gray-600 mb-1">
+            <div key={entry.id} className="rounded p-3 bg-neutral-800">
+              <div className="text-sm text-neutral-400 mb-1">
                 {new Date(entry.created_at).toLocaleString()}
               </div>
-              <div>{entry.content}</div>
+              <div className="text-">{entry.content}</div>
             </div>
           ))
         )}
