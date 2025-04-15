@@ -10,7 +10,7 @@ interface JournalEntry {
   updated_at: string;
 }
 
-export function useJournalEntries(enabled: boolean) {
+function useJournalEntries(enabled: boolean) {
   return useQuery<JournalEntry[]>({
     queryKey: ["journalEntries"],
     queryFn: async () => {
@@ -22,7 +22,7 @@ export function useJournalEntries(enabled: boolean) {
   });
 }
 
-export function useAddJournalEntry() {
+function useAddJournalEntry() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (content: string) => {
