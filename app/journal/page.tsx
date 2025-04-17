@@ -77,6 +77,9 @@ export default function JournalPage() {
   return (
     <div className="max-w-xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">My Journal</h1>
+      <p className="text-gray-500 mb-4">
+        Keep track of your thoughts and experiences.
+      </p>
       <form onSubmit={handleSubmit} className="mb-6 flex flex-col gap-2">
         <textarea
           className="border rounded p-2 min-h-[80px]"
