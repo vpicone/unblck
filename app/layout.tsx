@@ -39,7 +39,7 @@ export default function RootLayout({
           <body
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
           >
-            <header className="flex justify-between items-center p-4 gap-4 h-16 max-w-xl mx-auto">
+            <header className="flex justify-between items-center p-4 gap-4 h-16 max-w-2xl mx-auto">
               <div className="flex items-center gap-4">
                 <Link href="/" className="font-semibold hover:underline">
                   Home
