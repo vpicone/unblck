@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { neon } from "@neondatabase/serverless";
-
-const sql = neon(process.env.DATABASE_URL!);
+import { db } from "@/app/db/client";
+import { journalEntries } from "@/app/db/schema";
+import { eq, desc } from "drizzle-orm";
 
 // GET: Fetch all journal entries for the current user
 export async function GET() {
@@ -10,12 +10,11 @@ export async function GET() {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const entries = await sql`
-    SELECT id, content, created_at, updated_at
-    FROM journal_entries
-    WHERE user_id = ${userId}
-    ORDER BY created_at DESC
-  `;
+  const entries = await db
+    .select()
+    .from(journalEntries)
+    .where(eq(journalEntries.userId, userId))
+    .orderBy(desc(journalEntries.createdAt));
   return NextResponse.json(entries);
 }
 
@@ -29,10 +28,9 @@ export async function POST(req: NextRequest) {
   if (!content || typeof content !== "string") {
     return NextResponse.json({ error: "Content is required" }, { status: 400 });
   }
-  const result = await sql`
-    INSERT INTO journal_entries (user_id, content)
-    VALUES (${userId}, ${content})
-    RETURNING id, content, created_at, updated_at
-  `;
-  return NextResponse.json(result[0], { status: 201 });
+  const [result] = await db
+    .insert(journalEntries)
+    .values({ userId, content })
+    .returning();
+  return NextResponse.json(result, { status: 201 });
 }
