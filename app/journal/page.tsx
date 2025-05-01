@@ -4,7 +4,6 @@ import { useUser } from "@clerk/nextjs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 interface JournalEntry {
@@ -155,7 +154,7 @@ export default function JournalPage() {
         Keep track of your thoughts and experiences.
       </p>
       <form onSubmit={handleSubmit} className="mb-6 flex flex-col gap-2">
-        <Input
+        <Textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Write a new journal entry..."
