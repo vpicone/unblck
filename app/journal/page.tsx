@@ -6,8 +6,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 interface JournalEntry {
   id: number;
   content: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 function useJournalEntries(enabled: boolean) {
@@ -42,6 +42,48 @@ function useAddJournalEntry() {
   });
 }
 
+function useEditJournalEntry() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, content }: { id: number; content: string }) => {
+      const res = await fetch("/api/journal", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, content }),
+      });
+      if (!res.ok) throw new Error("Failed to update entry");
+      return res.json();
+    },
+    onSuccess: (updatedEntry) => {
+      queryClient.setQueryData<JournalEntry[]>(["journalEntries"], (old) =>
+        old
+          ? old.map((e) => (e.id === updatedEntry.id ? updatedEntry : e))
+          : [updatedEntry]
+      );
+    },
+  });
+}
+
+function useDeleteJournalEntry() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch("/api/journal", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) throw new Error("Failed to delete entry");
+      return id;
+    },
+    onSuccess: (deletedId) => {
+      queryClient.setQueryData<JournalEntry[]>(["journalEntries"], (old) =>
+        old ? old.filter((e) => e.id !== deletedId) : []
+      );
+    },
+  });
+}
+
 export default function JournalPage() {
   const { isSignedIn, isLoaded } = useUser();
   const {
@@ -50,7 +92,11 @@ export default function JournalPage() {
     error,
   } = useJournalEntries(!!isSignedIn);
   const addJournalEntry = useAddJournalEntry();
+  const editJournalEntry = useEditJournalEntry();
+  const deleteJournalEntry = useDeleteJournalEntry();
   const [content, setContent] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState("");
 
   // Handle new entry submission
   async function handleSubmit(e: React.FormEvent) {
@@ -58,6 +104,32 @@ export default function JournalPage() {
     addJournalEntry.mutate(content, {
       onSuccess: () => setContent(""),
     });
+  }
+
+  function startEdit(entry: JournalEntry) {
+    setEditingId(entry.id);
+    setEditContent(entry.content);
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setEditContent("");
+  }
+
+  function handleEditSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (editingId) {
+      editJournalEntry.mutate(
+        { id: editingId, content: editContent },
+        { onSuccess: cancelEdit }
+      );
+    }
+  }
+
+  function handleDelete() {
+    if (editingId) {
+      deleteJournalEntry.mutate(editingId, { onSuccess: cancelEdit });
+    }
   }
 
   if (!isLoaded) {
@@ -71,8 +143,6 @@ export default function JournalPage() {
       </div>
     );
   }
-
-  console.log(addJournalEntry);
 
   return (
     <div className="max-w-xl mx-auto p-6">
@@ -104,9 +174,57 @@ export default function JournalPage() {
           entries.map((entry) => (
             <div key={entry.id} className="rounded p-3 bg-neutral-800">
               <div className="text-sm text-neutral-400 mb-1">
-                {new Date(entry.created_at).toLocaleString()}
+                {new Date(entry.createdAt).toLocaleString()}
               </div>
-              <div className="text-">{entry.content}</div>
+              {editingId === entry.id ? (
+                <form
+                  onSubmit={handleEditSubmit}
+                  className="flex flex-col gap-2"
+                >
+                  <textarea
+                    className="border rounded p-2 min-h-[80px]"
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    required
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      className="bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50"
+                      disabled={
+                        editJournalEntry.isPending || !editContent.trim()
+                      }
+                    >
+                      Save
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded px-4 py-2"
+                      onClick={cancelEdit}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      className="rounded px-4 py-2 text-red-500 border border-red-500 ml-auto"
+                      onClick={handleDelete}
+                      disabled={deleteJournalEntry.isPending}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <div className="text-">{entry.content}</div>
+                  <button
+                    className="text-xs text-blue-400 underline mt-2"
+                    onClick={() => startEdit(entry)}
+                  >
+                    Edit
+                  </button>
+                </>
+              )}
             </div>
           ))
         )}

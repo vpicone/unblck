@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, index, foreignKey, serial } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, index, foreignKey, serial, unique, check, date, integer } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -22,4 +22,34 @@ export const journalEntries = pgTable("journal_entries", {
 			foreignColumns: [users.id],
 			name: "fk_users"
 		}).onDelete("cascade"),
+]);
+
+export const statusTypes = pgTable("status_types", {
+	id: serial().primaryKey().notNull(),
+	name: text().notNull(),
+}, (table) => [
+	unique("status_types_name_key").on(table.name),
+]);
+
+export const goals = pgTable("goals", {
+	id: serial().primaryKey().notNull(),
+	title: text().notNull(),
+	description: text(),
+	targetDate: date("target_date").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
+	statusId: integer("status_id").default(2).notNull(),
+	userId: text("user_id").notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.statusId],
+			foreignColumns: [statusTypes.id],
+			name: "goals_status_id_fkey"
+		}),
+	foreignKey({
+			columns: [table.userId],
+			foreignColumns: [users.id],
+			name: "fk_users"
+		}).onDelete("cascade"),
+	check("future_target_date", sql`target_date >= CURRENT_DATE`),
 ]);
