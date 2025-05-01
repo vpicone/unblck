@@ -2,6 +2,16 @@
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface Goal {
   id: number;
@@ -109,6 +119,22 @@ export default function GoalsPage() {
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editTargetDate, setEditTargetDate] = useState("");
+  const [dateObj, setDateObj] = useState<Date | undefined>(
+    targetDate ? new Date(targetDate) : undefined
+  );
+  const [editDateObj, setEditDateObj] = useState<Date | undefined>(
+    editTargetDate ? new Date(editTargetDate) : undefined
+  );
+
+  function handleDateChange(date: Date | undefined) {
+    setDateObj(date);
+    setTargetDate(date ? format(date, "yyyy-MM-dd") : "");
+  }
+
+  function handleEditDateChange(date: Date | undefined) {
+    setEditDateObj(date);
+    setEditTargetDate(date ? format(date, "yyyy-MM-dd") : "");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -119,6 +145,7 @@ export default function GoalsPage() {
           setTitle("");
           setDescription("");
           setTargetDate("");
+          setDateObj(undefined);
         },
       }
     );
@@ -129,6 +156,7 @@ export default function GoalsPage() {
     setEditTitle(goal.title);
     setEditDescription(goal.description || "");
     setEditTargetDate(goal.targetDate);
+    setEditDateObj(goal.targetDate ? new Date(goal.targetDate) : undefined);
   }
 
   function cancelEdit() {
@@ -136,6 +164,7 @@ export default function GoalsPage() {
     setEditTitle("");
     setEditDescription("");
     setEditTargetDate("");
+    setEditDateObj(undefined);
   }
 
   function handleEditSubmit(e: React.FormEvent) {
@@ -183,20 +212,37 @@ export default function GoalsPage() {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Description (optional)"
         />
-        <input
-          className="border rounded p-2"
-          type="date"
-          value={targetDate}
-          onChange={(e) => setTargetDate(e.target.value)}
-          required
-        />
-        <button
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant={"outline"}
+              className={cn(
+                "w-full justify-start text-left font-normal",
+                !dateObj && "text-muted-foreground"
+              )}
+              type="button"
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              {dateObj ? format(dateObj, "PPP") : <span>Pick a date</span>}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <Calendar
+              disabled={{ before: new Date() }}
+              mode="single"
+              selected={dateObj}
+              onSelect={handleDateChange}
+              initialFocus
+            />
+          </PopoverContent>
+        </Popover>
+        <Button
           type="submit"
           className="bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50"
           disabled={addGoal.isPending || !title.trim() || !targetDate}
         >
           Add Goal
-        </button>
+        </Button>
       </form>
       {error && <div className="text-red-600 mb-4">{error.message}</div>}
       <div className="space-y-4">
@@ -221,15 +267,35 @@ export default function GoalsPage() {
                     value={editDescription}
                     onChange={(e) => setEditDescription(e.target.value)}
                   />
-                  <input
-                    className="border rounded p-2"
-                    type="date"
-                    value={editTargetDate}
-                    onChange={(e) => setEditTargetDate(e.target.value)}
-                    required
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !editDateObj && "text-muted-foreground"
+                        )}
+                        type="button"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {editDateObj ? (
+                          format(editDateObj, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={editDateObj}
+                        onSelect={handleEditDateChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <div className="flex gap-2">
-                    <button
+                    <Button
                       type="submit"
                       className="bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50"
                       disabled={
@@ -239,22 +305,22 @@ export default function GoalsPage() {
                       }
                     >
                       Save
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       className="rounded px-4 py-2"
                       onClick={cancelEdit}
                     >
                       Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       className="rounded px-4 py-2 text-red-500 border border-red-500 ml-auto"
                       onClick={handleDelete}
                       disabled={deleteGoal.isPending}
                     >
                       Delete
-                    </button>
+                    </Button>
                   </div>
                 </form>
               ) : (
