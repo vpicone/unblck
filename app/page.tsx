@@ -11,12 +11,14 @@ export default function Home() {
         {isSignedIn && (
           <>
             <Link
+              prefetch={true}
               href="/journal"
               className="rounded bg-blue-600 text-white px-4 py-2 mt-2 inline-block hover:bg-blue-700 transition-colors"
             >
               Go to Journal
             </Link>
             <Link
+              prefetch={true}
               href="/goals"
               className="rounded bg-blue-600 text-white px-4 py-2 mt-2 inline-block hover:bg-blue-700 transition-colors"
             >
