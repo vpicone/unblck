@@ -50,6 +50,9 @@ export default function RootLayout({
                   <Link href="/journal" className="hover:underline">
                     Journal
                   </Link>
+                  <Link href="/goals" className="hover:underline">
+                    Goals
+                  </Link>
                 </SignedIn>
                 <div className="flex items-center gap-4">
                   <SignedOut>
