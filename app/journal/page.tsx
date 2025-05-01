@@ -2,6 +2,10 @@
 import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 interface JournalEntry {
   id: number;
@@ -151,20 +155,19 @@ export default function JournalPage() {
         Keep track of your thoughts and experiences.
       </p>
       <form onSubmit={handleSubmit} className="mb-6 flex flex-col gap-2">
-        <textarea
-          className="border rounded p-2 min-h-[80px]"
+        <Input
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Write a new journal entry..."
           required
         />
-        <button
+        <Button
           type="submit"
           className="bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50"
           disabled={addJournalEntry.isPending || !content.trim()}
         >
           Add Entry
-        </button>
+        </Button>
       </form>
       {error && <div className="text-red-600 mb-4">{error.message}</div>}
       <div className="space-y-4">
@@ -172,60 +175,62 @@ export default function JournalPage() {
           <div className="text-gray-500">No entries yet.</div>
         ) : (
           entries.map((entry) => (
-            <div key={entry.id} className="rounded p-3 bg-neutral-800">
-              <div className="text-sm text-neutral-400 mb-1">
-                {new Date(entry.createdAt).toLocaleString()}
-              </div>
-              {editingId === entry.id ? (
-                <form
-                  onSubmit={handleEditSubmit}
-                  className="flex flex-col gap-2"
-                >
-                  <textarea
-                    className="border rounded p-2 min-h-[80px]"
-                    value={editContent}
-                    onChange={(e) => setEditContent(e.target.value)}
-                    required
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      type="submit"
-                      className="bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50"
-                      disabled={
-                        editJournalEntry.isPending || !editContent.trim()
-                      }
-                    >
-                      Save
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded px-4 py-2"
-                      onClick={cancelEdit}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      className="rounded px-4 py-2 text-red-500 border border-red-500 ml-auto"
-                      onClick={handleDelete}
-                      disabled={deleteJournalEntry.isPending}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <>
-                  <div className="text-">{entry.content}</div>
-                  <button
-                    className="text-xs text-blue-400 underline mt-2"
-                    onClick={() => startEdit(entry)}
+            <Card key={entry.id}>
+              <CardContent className="p-3">
+                <div className="text-sm text-neutral-400 mb-1">
+                  {new Date(entry.createdAt).toLocaleString()}
+                </div>
+                {editingId === entry.id ? (
+                  <form
+                    onSubmit={handleEditSubmit}
+                    className="flex flex-col gap-2"
                   >
-                    Edit
-                  </button>
-                </>
-              )}
-            </div>
+                    <Textarea
+                      value={editContent}
+                      onChange={(e) => setEditContent(e.target.value)}
+                      required
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        type="submit"
+                        className="bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50"
+                        disabled={
+                          editJournalEntry.isPending || !editContent.trim()
+                        }
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        type="button"
+                        className="rounded px-4 py-2"
+                        onClick={cancelEdit}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        className="rounded px-4 py-2 text-red-500 border border-red-500 ml-auto"
+                        onClick={handleDelete}
+                        disabled={deleteJournalEntry.isPending}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div className="text-">{entry.content}</div>
+                    <Button
+                      variant="link"
+                      className="text-xs text-blue-400 underline mt-2 p-0 h-auto"
+                      onClick={() => startEdit(entry)}
+                    >
+                      Edit
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           ))
         )}
       </div>

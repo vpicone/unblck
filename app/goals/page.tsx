@@ -12,6 +12,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Goal {
   id: number;
@@ -199,15 +202,13 @@ export default function GoalsPage() {
     <div className="max-w-xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">My Goals</h1>
       <form onSubmit={handleSubmit} className="mb-6 flex flex-col gap-2">
-        <input
-          className="border rounded p-2"
+        <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Goal title"
           required
         />
-        <textarea
-          className="border rounded p-2 min-h-[60px]"
+        <Textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Description (optional)"
@@ -250,97 +251,100 @@ export default function GoalsPage() {
           <div className="text-gray-500">No goals yet.</div>
         ) : (
           goals.map((goal) => (
-            <div key={goal.id} className="rounded p-3 bg-neutral-800">
-              {editingId === goal.id ? (
-                <form
-                  onSubmit={handleEditSubmit}
-                  className="flex flex-col gap-2"
-                >
-                  <input
-                    className="border rounded p-2"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    required
-                  />
-                  <textarea
-                    className="border rounded p-2 min-h-[60px]"
-                    value={editDescription}
-                    onChange={(e) => setEditDescription(e.target.value)}
-                  />
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant={"outline"}
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !editDateObj && "text-muted-foreground"
-                        )}
-                        type="button"
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {editDateObj ? (
-                          format(editDateObj, "PPP")
-                        ) : (
-                          <span>Pick a date</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0">
-                      <Calendar
-                        mode="single"
-                        selected={editDateObj}
-                        onSelect={handleEditDateChange}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <div className="flex gap-2">
-                    <Button
-                      type="submit"
-                      className="bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50"
-                      disabled={
-                        editGoal.isPending ||
-                        !editTitle.trim() ||
-                        !editTargetDate
-                      }
-                    >
-                      Save
-                    </Button>
-                    <Button
-                      type="button"
-                      className="rounded px-4 py-2"
-                      onClick={cancelEdit}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="button"
-                      className="rounded px-4 py-2 text-red-500 border border-red-500 ml-auto"
-                      onClick={handleDelete}
-                      disabled={deleteGoal.isPending}
-                    >
-                      Delete
-                    </Button>
-                  </div>
-                </form>
-              ) : (
-                <>
-                  <div className="font-semibold">{goal.title}</div>
-                  <div className="text-sm text-neutral-400 mb-1">
-                    Target: {goal.targetDate}
-                  </div>
-                  {goal.description && (
-                    <div className="text-neutral-300">{goal.description}</div>
-                  )}
-                  <button
-                    className="text-xs text-blue-400 underline mt-2"
-                    onClick={() => startEdit(goal)}
+            <Card key={goal.id}>
+              <CardContent className="p-3">
+                {editingId === goal.id ? (
+                  <form
+                    onSubmit={handleEditSubmit}
+                    className="flex flex-col gap-2"
                   >
-                    Edit
-                  </button>
-                </>
-              )}
-            </div>
+                    <Input
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      required
+                    />
+                    <textarea
+                      className="border rounded p-2 min-h-[60px]"
+                      value={editDescription}
+                      onChange={(e) => setEditDescription(e.target.value)}
+                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !editDateObj && "text-muted-foreground"
+                          )}
+                          type="button"
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {editDateObj ? (
+                            format(editDateObj, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          disabled={{ before: new Date() }}
+                          mode="single"
+                          selected={editDateObj}
+                          onSelect={handleEditDateChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <div className="flex gap-2">
+                      <Button
+                        type="submit"
+                        className="bg-blue-600 text-white rounded px-4 py-2 disabled:opacity-50"
+                        disabled={
+                          editGoal.isPending ||
+                          !editTitle.trim() ||
+                          !editTargetDate
+                        }
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        type="button"
+                        className="rounded px-4 py-2"
+                        onClick={cancelEdit}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        className="rounded px-4 py-2 text-red-500 border border-red-500 ml-auto"
+                        onClick={handleDelete}
+                        disabled={deleteGoal.isPending}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div className="font-semibold">{goal.title}</div>
+                    <div className="text-sm text-neutral-400 mb-1">
+                      Target: {goal.targetDate}
+                    </div>
+                    {goal.description && (
+                      <div className="text-neutral-300">{goal.description}</div>
+                    )}
+                    <Button
+                      variant="link"
+                      className="text-xs text-blue-400 underline mt-2 p-0 h-auto"
+                      onClick={() => startEdit(goal)}
+                    >
+                      Edit
+                    </Button>
+                  </>
+                )}
+              </CardContent>
+            </Card>
           ))
         )}
       </div>
