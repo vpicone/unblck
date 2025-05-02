@@ -11,6 +11,12 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "./query-provider";
 import Link from "next/link";
+import {
+  NavigationMenu,
+  NavigationMenuList,
+  NavigationMenuItem,
+  NavigationMenuLink,
+} from "@/components/ui/navigation-menu";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,29 +46,37 @@ export default function RootLayout({
             className={`${geistSans.variable} ${geistMono.variable} antialiased`}
           >
             <header className="flex justify-between items-center p-4 gap-4 h-16 max-w-2xl mx-auto">
-              <div className="flex items-center gap-4">
-                <Link href="/" className="font-semibold hover:underline">
-                  Home
-                </Link>
-              </div>
-              <div className="flex items-center gap-4">
-                <SignedIn>
-                  <Link href="/journal" className="hover:underline">
-                    Journal
-                  </Link>
-                  <Link href="/goals" className="hover:underline">
-                    Goals
-                  </Link>
-                </SignedIn>
-                <div className="flex items-center gap-4">
-                  <SignedOut>
-                    <SignInButton />
-                    <SignUpButton />
-                  </SignedOut>
+              <NavigationMenu className="flex-1">
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuLink asChild>
+                      <Link href="/" className="font-semibold">
+                        Home
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
                   <SignedIn>
-                    <UserButton />
+                    <NavigationMenuItem>
+                      <NavigationMenuLink asChild>
+                        <Link href="/journal">Journal</Link>
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                      <NavigationMenuLink asChild>
+                        <Link href="/goals">Goals</Link>
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
                   </SignedIn>
-                </div>
+                </NavigationMenuList>
+              </NavigationMenu>
+              <div className="flex items-center gap-4">
+                <SignedOut>
+                  <SignInButton />
+                  <SignUpButton />
+                </SignedOut>
+                <SignedIn>
+                  <UserButton />
+                </SignedIn>
               </div>
             </header>
             {children}
