@@ -12,11 +12,17 @@ import "./globals.css";
 import QueryProvider from "./query-provider";
 import Link from "next/link";
 import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuLink,
-} from "@/components/ui/navigation-menu";
+  SidebarProvider,
+  Sidebar,
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarFooter,
+} from "@/components/ui/sidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,43 +49,51 @@ export default function RootLayout({
       <ClerkProvider>
         <html className="dark" lang="en">
           <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+            className={`${geistSans.variable} ${geistMono.variable} antialiased flex min-h-screen`}
           >
-            <header className="flex justify-between items-center p-4 gap-4 h-16 max-w-2xl mx-auto">
-              <NavigationMenu className="flex-1">
-                <NavigationMenuList>
-                  <NavigationMenuItem>
-                    <NavigationMenuLink asChild>
-                      <Link href="/" className="font-semibold">
-                        Home
-                      </Link>
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
+            <SidebarProvider>
+              <Sidebar className="border-r bg-background">
+                <SidebarHeader>
+                  <span className="font-bold text-lg tracking-tight">
+                    unblck
+                  </span>
+                </SidebarHeader>
+                <SidebarContent>
+                  <SidebarGroup>
+                    <SidebarGroupLabel>Main</SidebarGroupLabel>
+                    <SidebarMenu>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton asChild isActive={false}>
+                          <Link href="/">Home</Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                      <SignedIn>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton asChild isActive={false}>
+                            <Link href="/journal">Journal</Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton asChild isActive={false}>
+                            <Link href="/goals">Goals</Link>
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+                      </SignedIn>
+                    </SidebarMenu>
+                  </SidebarGroup>
+                </SidebarContent>
+                <SidebarFooter>
+                  <SignedOut>
+                    <SignInButton />
+                    <SignUpButton />
+                  </SignedOut>
                   <SignedIn>
-                    <NavigationMenuItem>
-                      <NavigationMenuLink asChild>
-                        <Link href="/journal">Journal</Link>
-                      </NavigationMenuLink>
-                    </NavigationMenuItem>
-                    <NavigationMenuItem>
-                      <NavigationMenuLink asChild>
-                        <Link href="/goals">Goals</Link>
-                      </NavigationMenuLink>
-                    </NavigationMenuItem>
+                    <UserButton />
                   </SignedIn>
-                </NavigationMenuList>
-              </NavigationMenu>
-              <div className="flex items-center gap-4">
-                <SignedOut>
-                  <SignInButton />
-                  <SignUpButton />
-                </SignedOut>
-                <SignedIn>
-                  <UserButton />
-                </SignedIn>
-              </div>
-            </header>
-            {children}
+                </SidebarFooter>
+              </Sidebar>
+              <main className="flex-1">{children}</main>
+            </SidebarProvider>
           </body>
         </html>
       </ClerkProvider>
