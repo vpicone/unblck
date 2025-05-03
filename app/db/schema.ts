@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, index, foreignKey, serial, unique, check, date, integer } from "drizzle-orm/pg-core"
+import { pgTable, text, timestamp, index, foreignKey, serial, unique, date, integer } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -51,5 +51,4 @@ export const goals = pgTable("goals", {
 			foreignColumns: [users.id],
 			name: "fk_users"
 		}).onDelete("cascade"),
-	check("future_target_date", sql`target_date >= CURRENT_DATE`),
 ]);
