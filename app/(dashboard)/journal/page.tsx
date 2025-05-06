@@ -148,7 +148,7 @@ export default function JournalPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto p-6">
+    <div className="max-w-xl mx-auto md:p-6 ">
       <h1 className="text-2xl font-bold mb-4">My Journal</h1>
       <p className="text-gray-500 mb-4">
         Keep track of your thoughts and experiences.

@@ -18,6 +18,7 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarFooter,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 export const metadata: Metadata = {
@@ -34,17 +35,16 @@ export default function RootLayout({
     <SidebarProvider>
       <Sidebar className="border-r bg-background">
         <SidebarHeader>
-          <span className="font-bold text-lg tracking-tight">unblck</span>
+          <Link href="/">
+            <span className="font-bold text-lg tracking-tight cursor-pointer">
+              unblck
+            </span>
+          </Link>
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel>Main</SidebarGroupLabel>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={false}>
-                  <Link href="/">Home</Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
               <SignedIn>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={false}>
@@ -70,7 +70,12 @@ export default function RootLayout({
           </SignedIn>
         </SidebarFooter>
       </Sidebar>
-      {children}
+      <div className="flex-1 relative">
+        <div className="md:hidden absolute top-4 left-4 z-50">
+          <SidebarTrigger />
+        </div>
+        {children}
+      </div>
     </SidebarProvider>
   );
 }
