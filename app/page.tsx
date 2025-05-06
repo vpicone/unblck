@@ -1,7 +1,6 @@
 import { Header } from "@/components/ui/header";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { RotatingCube } from "@/components/RotatingCube";
 
 export default async function Home() {
   const authData = await auth();
